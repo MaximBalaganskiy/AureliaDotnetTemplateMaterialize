@@ -35,16 +35,16 @@ module.exports = (env, argv) => {
 				{ test: /\.(png|eot|ttf|svg)(\?|$)/, loader: "url-loader?limit=100000" },
 				{ test: /\.ts$/i, include: [/ClientApp/, /node_modules/], use: "awesome-typescript-loader" },
 				{ test: /\.html$/i, use: "html-loader" },
-				{ test: /\.css(\?|$)/, include: [/node_modules/], use: [{ loader: MiniCssExtractPlugin.loader }, cssLoader] },
-				{ test: /\.css$/i, exclude: [/node_modules/], issuer: /\.html$/i, use: cssLoader },
-				{ test: /\.css$/i, exclude: [/node_modules/], issuer: [{ not: [{ test: /\.html$/i }] }], use: ["style-loader", cssLoader] },
+				{ test: /\.css$/i, include: [/node_modules/], issuer: /\.html$/i, use: cssLoader },
+				{ test: /\.css$/i, include: [/node_modules/], exclude: [/\materialize.css$/], issuer: [{ not: [{ test: /\.html$/i }] }], use: ["style-loader", cssLoader] },
+				{ test: /\materialize.css$/, use: extractCSS.extract({ use: [cssLoader], publicPath: "" /* override because CSS loads fonts relative to its' own location which is dist */ }) },
 				{ test: /\.scss$/i, issuer: /(\.html|empty-entry\.js)$/i, use: [cssLoader, "sass-loader"] },
 				{ test: /\.scss$/i, issuer: /\.ts$/i, use: ["style-loader", cssLoader, "sass-loader"] }
 			]
 		},
 		optimization: {
 			splitChunks: {
-				chunks: "all",
+				chunks: "all"
 				// uncomment the following to create a separate bundle for each npm module
 				/* maxInitialRequests: Infinity,
 				minSize: 0,

@@ -1,18 +1,19 @@
 <template>
-	<nav class="navbar navbar-expand-lg navbar-light bg-light">
-		<a class="navbar-brand" href="#/home">Navbar</a>
-		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-			<span class="navbar-toggler-icon"></span>
-		</button>
+	<md-navbar>
+		<a md-sidenav-collapse="ref.bind: sideNav;" class="left hide-on-large-only" style="cursor: pointer; padding: 0 10px;"><i class="material-icons">menu</i></a>
+		<a href="#" class="brand-logo right"><span class="flow-text">Aurelia .Net Materialize Template</span></a>
+		<ul id="nav-mobile" class="left hide-on-med-and-down">
+			<li repeat.for="row of router.navigation" md-waves class="${row.isActive ? 'active' : ''}">
+				<a href.bind="row.href"><i class="material-icons left">${row.settings.icon}</i> ${row.title}</a>
+			</li>
+		</ul>
+	</md-navbar>
 
-		<div class="navbar-collapse collapse" id="navbarNav">
-			<ul class="navbar-nav">
-				<li repeat.for="row of router.navigation" class="nav-item ${row.isActive ? 'active' : ''}">
-                    <a href.bind="row.href" class="nav-link">
-                        <i class="${row.settings.icon}"></i> ${row.title}
-                    </a>
-				</li>
-			</ul>
-		</div>
-	</nav>
+	<md-sidenav close-on-click="true" view-model.ref="sideNav">
+		<ul class="sidenav-close">
+			<li repeat.for="row of router.navigation" md-waves class="${row.isActive ? 'active' : ''}">
+				<a href.bind="row.href"><i class="material-icons left">${row.settings.icon}</i> ${row.title}</a>
+			</li>
+		</ul>
+	</md-sidenav>
 </template>
