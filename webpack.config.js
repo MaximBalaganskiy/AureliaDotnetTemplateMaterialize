@@ -37,7 +37,7 @@ module.exports = (env, argv) => {
 				{ test: /\.html$/i, use: "html-loader" },
 				{ test: /\.css$/i, include: [/node_modules/], issuer: /\.html$/i, use: cssLoader },
 				{ test: /\.css$/i, include: [/node_modules/], exclude: [/\materialize.css$/], issuer: [{ not: [{ test: /\.html$/i }] }], use: ["style-loader", cssLoader] },
-				{ test: /\materialize.css$/, use: extractCSS.extract({ use: [cssLoader], publicPath: "" /* override because CSS loads fonts relative to its' own location which is dist */ }) },
+				{ test: /\materialize.css$/, use: [{ loader: MiniCssExtractPlugin.loader }, cssLoader] },
 				{ test: /\.scss$/i, issuer: /(\.html|empty-entry\.js)$/i, use: [cssLoader, "sass-loader"] },
 				{ test: /\.scss$/i, issuer: /\.ts$/i, use: ["style-loader", cssLoader, "sass-loader"] }
 			]
