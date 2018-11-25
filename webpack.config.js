@@ -1,7 +1,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const { AureliaPlugin, ModuleDependenciesPlugin, GlobDependenciesPlugin } = require("aurelia-webpack-plugin");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
@@ -63,7 +63,7 @@ module.exports = (env, argv) => {
 				}*/
 			},
 			minimizer: [
-				new UglifyJsPlugin({
+				new TerserPlugin({
 					cache: true,
 					parallel: true,
 					sourceMap: true // set to true if you want JS source maps
@@ -77,7 +77,6 @@ module.exports = (env, argv) => {
 		},
 		plugins: [
 			new webpack.DefinePlugin({ IS_DEV_BUILD: JSON.stringify(isDevBuild) }),
-			new webpack.ProvidePlugin({ $: "jquery", jQuery: "jquery", "window.jQuery": "jquery" }),
 			new HtmlWebpackPlugin({ template: 'Views/Shared/_LayoutTemplate.cshtml', filename: "../../Views/Shared/_Layout.cshtml", inject: false, metadata: {}, alwaysWriteToDisk: true }),
 			new AureliaPlugin({ aureliaApp: "boot" }),
 			new GlobDependenciesPlugin({ "boot": ["ClientApp/**/*.{ts,html}"] }),
