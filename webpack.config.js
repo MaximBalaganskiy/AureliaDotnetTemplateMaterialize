@@ -9,7 +9,10 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const bundleOutputDir = "./wwwroot/dist";
 
 module.exports = (env, argv) => {
-	console.log("mode=", argv.mode);
+	if ((!argv || !argv.mode) && process.env.ASPNETCORE_ENVIRONMENT === "Development") {
+		argv = { mode: "development" };
+	}
+	console.log("mode =", argv.mode);
 	const isDevBuild = argv.mode !== "production";
 	const cssLoaders = isDevBuild ? ["css-loader"] : ["css-loader", "postcss-loader"];
 	const scssLoaders = [...cssLoaders, "sass-loader"];
