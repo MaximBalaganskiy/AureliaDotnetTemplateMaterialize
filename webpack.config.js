@@ -9,12 +9,10 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const bundleOutputDir = "./wwwroot/dist";
 
 module.exports = (env, argv) => {
-	if ((!argv || !argv.mode) && process.env.ASPNETCORE_ENVIRONMENT === "Development") {
-		argv = { mode: "development" };
-	}
 	console.log("mode=", argv.mode);
 	const isDevBuild = argv.mode !== "production";
-	const cssLoader = { loader: isDevBuild ? "css-loader" : "css-loader?minimize" };
+	const cssLoaders = isDevBuild ? ["css-loader"] : ["css-loader", "postcss-loader"];
+	const scssLoaders = [...cssLoaders, "sass-loader"];
 	return [{
 		target: "web",
 		mode: isDevBuild ? "development" : "production",
@@ -35,11 +33,11 @@ module.exports = (env, argv) => {
 				{ test: /\.(png|eot|ttf|svg)(\?|$)/, loader: "url-loader?limit=100000" },
 				{ test: /\.ts$/i, include: [/ClientApp/, /node_modules/], use: "awesome-typescript-loader" },
 				{ test: /\.html$/i, use: "html-loader" },
-				{ test: /\.css$/i, include: [/node_modules/], issuer: /\.html$/i, use: cssLoader },
-				{ test: /\.css$/i, include: [/node_modules/], exclude: [/\materialize.css$/], issuer: [{ not: [{ test: /\.html$/i }] }], use: ["style-loader", cssLoader] },
-				{ test: /\materialize.css$/, use: [{ loader: MiniCssExtractPlugin.loader }, cssLoader] },
-				{ test: /\.scss$/i, issuer: /(\.html|empty-entry\.js)$/i, use: [cssLoader, "sass-loader"] },
-				{ test: /\.scss$/i, issuer: /\.ts$/i, use: ["style-loader", cssLoader, "sass-loader"] }
+				{ test: /\.css$/i, include: [/node_modules/], issuer: /\.html$/i, use: cssLoaders },
+				{ test: /\.css$/i, include: [/node_modules/], exclude: [/\materialize.css$/], issuer: [{ not: [{ test: /\.html$/i }] }], use: ["style-loader", ...cssLoaders] },
+				{ test: /\materialize.css$/, use: [{ loader: MiniCssExtractPlugin.loader }, ...cssLoaders] },
+				{ test: /\.scss$/i, issuer: /(\.html|empty-entry\.js)$/i, use: scssLoaders },
+				{ test: /\.scss$/i, issuer: /\.ts$/i, use: ["style-loader", ...scssLoaders] }
 			]
 		},
 		optimization: {
@@ -68,8 +66,7 @@ module.exports = (env, argv) => {
 					parallel: true,
 					sourceMap: true // set to true if you want JS source maps
 				}),
-				new OptimizeCSSAssetsPlugin({})
-			]
+			].concat(isDevBuild ? [] : [new OptimizeCSSAssetsPlugin({})])
 		},
 		devtool: isDevBuild ? "source-map" : false,
 		performance: {

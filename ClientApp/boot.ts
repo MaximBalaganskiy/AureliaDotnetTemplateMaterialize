@@ -2,6 +2,8 @@ import "isomorphic-fetch";
 import { Aurelia, PLATFORM } from "aurelia-framework";
 import { HttpClient } from "aurelia-fetch-client";
 import "materialize-css";
+// uncommment if you would like to load materialize CSS through a link on the index page - can be helpful for a loading spinner
+// import "materialize-css/dist/css/materialize.css";
 declare const IS_DEV_BUILD: boolean; // The value is supplied by Webpack during the build
 
 export function configure(aurelia: Aurelia) {
