@@ -30,20 +30,20 @@
     <Exec Command="npm run webpack:dev" />
   </Target>
 
-  <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
-    <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
-    <Exec Command="npm install" />
-    <Exec Command="npm run webpack:dev" Condition="'$(Configuration)' == 'Debug'" />
-    <Exec Command="npm run webpack:prod" Condition="'$(Configuration)' == 'Release'" />
-    
-    <!-- Include the newly-built files in the publish output -->
-    <ItemGroup>
-      <DistFiles Include="wwwroot\dist\**" />
-      <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
-        <RelativePath>%(DistFiles.Identity)</RelativePath>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </ResolvedFileToPublish>
-    </ItemGroup>
-  </Target>
+	<Target Name="RunWebpack" AfterTargets="PrepareForPublish">
+		<!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
+		<Exec Command="npm install" />
+		<Exec Command="npm ddp" />
+		<RemoveDir Directories="wwwroot/dist"/>
+		<Exec Command="npm run webpack:prod" Condition=" '$(Configuration)' == 'Release' " />
+		<Exec Command="npm run webpack:dev" Condition=" '$(Configuration)' == 'Debug' " />
+
+		<ItemGroup>
+			<!-- First, clean up previously generated content that may have been removed. -->
+			<ContentWithTargetPath Remove="@(ContentWithTargetPath)" Condition="!Exists('%(Identity)')" />
+			<_WebpackFiles Include="wwwroot\dist\**" />
+			<ContentWithTargetPath Include="@(_WebpackFiles->'%(FullPath)')" RelativePath="%(_WebpackFiles.Identity)" TargetPath="%(_WebpackFiles.Identity)" CopyToPublishDirectory="Always" />
+		</ItemGroup>
+	</Target>
 
 </Project>
