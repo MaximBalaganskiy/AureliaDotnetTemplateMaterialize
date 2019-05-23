@@ -1,10 +1,9 @@
 const path = require("path");
 const webpack = require("webpack");
 const { AureliaPlugin, ModuleDependenciesPlugin, GlobDependenciesPlugin } = require("aurelia-webpack-plugin");
-const TerserPlugin = require("terser-webpack-plugin");
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
 
 const bundleOutputDir = "./wwwroot/dist";
 
@@ -14,8 +13,9 @@ module.exports = (env, argv) => {
 	}
 	console.log("mode =", argv.mode);
 	const isDevBuild = argv.mode !== "production";
-	const cssLoaders = isDevBuild ? ["css-loader"] : ["css-loader", "postcss-loader"];
+	const cssLoaders = ["css-loader", "postcss-loader"];
 	const scssLoaders = [...cssLoaders, "sass-loader"];
+
 	return [{
 		target: "web",
 		mode: isDevBuild ? "development" : "production",
@@ -26,62 +26,67 @@ module.exports = (env, argv) => {
 		},
 		output: {
 			path: path.resolve(bundleOutputDir),
-			publicPath: "/dist/",
-			filename: "[name].js",
-			chunkFilename: "[name].js"
+			// Asp.Net JavaScriptServices does not tolerate "/" in public path, see https://github.com/aspnet/JavaScriptServices/issues/1495
+			publicPath: "dist/",
+			filename: "[name].[hash].js",
+			chunkFilename: "[name].[chunkhash].js",
+			pathinfo: false
 		},
 		module: {
 			rules: [
-				{ test: /\.(woff|woff2)(\?|$)/, loader: "url-loader?limit=1" },
-				{ test: /\.(png|eot|ttf|svg)(\?|$)/, loader: "url-loader?limit=100000" },
-				{ test: /\.ts$/i, include: [/ClientApp/, /node_modules/], use: "awesome-typescript-loader" },
+				{ test: /\.(woff|woff2|png|eot|ttf|svg)(\?|$)/, use: { loader: "url-loader", options: { limit: 1, publicPath: "./" } } },
+				{ test: /\.ts$/i, include: [/ClientApp/], loader: "ts-loader" },
 				{ test: /\.html$/i, use: "html-loader" },
 				{ test: /\.css$/i, include: [/node_modules/], issuer: /\.html$/i, use: cssLoaders },
-				{ test: /\.css$/i, include: [/node_modules/], exclude: [/\materialize.css$/], issuer: [{ not: [{ test: /\.html$/i }] }], use: ["style-loader", ...cssLoaders] },
-				{ test: /\materialize.css$/, use: [{ loader: MiniCssExtractPlugin.loader }, ...cssLoaders] },
+				{ test: /\.css$/i, include: [/node_modules/], exclude: [/materialize.css$/], issuer: [{ not: [{ test: /\.html$/i }] }], use: ["style-loader", ...cssLoaders] },
+				{ test: /\.css$/, include: [/materialize.css$/], use: [{ loader: MiniCssExtractPlugin.loader }, ...cssLoaders] },
 				{ test: /\.scss$/i, issuer: /(\.html|empty-entry\.js)$/i, use: scssLoaders },
 				{ test: /\.scss$/i, issuer: /\.ts$/i, use: ["style-loader", ...scssLoaders] }
 			]
 		},
 		optimization: {
 			splitChunks: {
-				chunks: "all"
-				// uncomment the following to create a separate bundle for each npm module
-				//maxInitialRequests: Infinity,
-				//minSize: 0,
-				//cacheGroups: {
-				//	vendor: {
-				//		test: /[\\/]node_modules[\\/]/,
-				//		name(module) {
-				//			//get the name. E.g. node_modules/packageName/not/this/part.js
-				//			//or node_modules/packageName
-				//			const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+				chunks: "all",
+				// comment the following to avoid creatin a separate bundle for each npm module
+				maxInitialRequests: Infinity,
+				minSize: 0,
+				cacheGroups: {
+					vendor: {
+						test: /[\\/]node_modules[\\/]/,
+						name(module) {
+							// get the name. E.g. node_modules/packageName/not/this/part.js
+							// or node_modules/packageName
+							const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
 
-				//			//npm package names are URL-safe, but some servers don't like @ symbols
-				//			return `npm.${packageName.replace('@', '')}`;
-				//		}
-				//	}
-				//}
-			},
-			minimizer: [
-				new TerserPlugin({
-					cache: true,
-					parallel: true,
-					sourceMap: true // set to true if you want JS source maps
-				}),
-			].concat(isDevBuild ? [] : [new OptimizeCSSAssetsPlugin({})])
+							// npm package names are URL-safe, but some servers don't like @ symbols
+							return `npm.${packageName.replace('@', '')}`;
+						}
+					}
+				}
+			}
 		},
 		devtool: isDevBuild ? "source-map" : false,
 		performance: {
 			hints: false
 		},
 		plugins: [
+			new CleanWebpackPlugin(),
 			new webpack.DefinePlugin({ IS_DEV_BUILD: JSON.stringify(isDevBuild) }),
-			new HtmlWebpackPlugin({ template: 'Views/Shared/_LayoutTemplate.cshtml', filename: "../../Views/Shared/_Layout.cshtml", inject: false, metadata: {}, alwaysWriteToDisk: true }),
+			new webpack.ProvidePlugin({ $: "jquery", jQuery: "jquery", "window.jQuery": "jquery" }),
+			new HtmlWebpackPlugin({ template: 'index.ejs', filename: "../../wwwroot/index.html", inject: false, metadata: {}, alwaysWriteToDisk: true }),
 			new AureliaPlugin({ aureliaApp: "boot" }),
 			new GlobDependenciesPlugin({ "boot": ["ClientApp/**/*.{ts,html}"] }),
 			new ModuleDependenciesPlugin({}),
-			new MiniCssExtractPlugin()
-		]
+			new MiniCssExtractPlugin({
+				filename: "[name].[hash].css",
+				chunkFilename: "[name].[chunkhash].css"
+			})
+		],
+		devServer: {
+			contentBase: "wwwroot/",
+			compress: true,
+			writeToDisk: true,
+			hot: false
+		}
 	}];
 };

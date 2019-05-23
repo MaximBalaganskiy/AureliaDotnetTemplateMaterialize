@@ -1,18 +1,22 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>@ViewData["Title"] - AureliaDotnetTemplate</title>
-	<base href="~/" />
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<title></title>
+
 	<% for (var css in htmlWebpackPlugin.files.css) { %>
-	<link href="~<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet" asp-append-version="true">
+	<link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
 	<% } %>
 </head>
 <body>
-	@RenderBody()
+	<div aurelia-app="boot" class="app">
+		<h5>Loading</h5>
+	</div>
+
 	<% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-	<script src="~<%= htmlWebpackPlugin.files.chunks[chunk].entry %>" asp-append-version="true"></script> <% } %>
+	<script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script> <% } %>
 </body>
 </html>
