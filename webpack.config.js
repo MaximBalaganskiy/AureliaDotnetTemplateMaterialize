@@ -72,7 +72,6 @@ module.exports = (env, argv) => {
 		plugins: [
 			new CleanWebpackPlugin(),
 			new webpack.DefinePlugin({ IS_DEV_BUILD: JSON.stringify(isDevBuild) }),
-			new webpack.ProvidePlugin({ $: "jquery", jQuery: "jquery", "window.jQuery": "jquery" }),
 			new HtmlWebpackPlugin({ template: 'index.ejs', filename: "../../wwwroot/index.html", inject: false, metadata: {}, alwaysWriteToDisk: true }),
 			new AureliaPlugin({ aureliaApp: "boot" }),
 			new GlobDependenciesPlugin({ "boot": ["ClientApp/**/*.{ts,html}"] }),
