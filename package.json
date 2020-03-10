@@ -30,7 +30,6 @@
 		"mini-css-extract-plugin": "^0.6.0",
 		"node-sass": "^4.13.1",
 		"optimize-css-assets-webpack-plugin": "^5.0.3",
-		"popper.js": "^1.16.1",
 		"postcss-loader": "^3.0.0",
 		"sass-loader": "^7.3.1",
 		"style-loader": "^0.23.1",
